@@ -1,0 +1,16 @@
+1.String
+   String 轉 Double : Double.parseDouble(String name);
+   String 結合      : String.format("",);
+
+2.File
+   File file = new File("圖片位置"); // 新增檔案物件
+   file.toPath();                    // 得到檔案來源(type: Path)
+
+3.Files
+   Files.copy(Path source, OutputStream out) // 將文件中的所有字節複製到輸出流。 
+   EX: 圖片呈現   
+     File file = new File("圖片位置");
+	 ServletOutputStream out = resp.getOutputStream();
+	 Files.copy(file.toPath(), out); 
+                      
+ 
