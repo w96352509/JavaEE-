@@ -87,4 +87,23 @@
       17-1. req.getRequestDispath("位置") 取得重導位置的 ServletContext
       17-2. forward 將 req & res 傳給導入位置接手
       17-3. include 將 req & res 傳給導入位置主導權還在自身
-      17-4. forward(丟給 servlet 並繼續維護 request & response) vs sendRedirect(丟給瀏覽器(browser)) 	
+      17-4. forward(丟給 servlet 並繼續維護 request & response) vs sendRedirect(丟給瀏覽器(browser))
+
+18. ServletConfig 介面 : 僅提供 get 方法 , 無法增加或修任何屬於 ServletConfig 物件中的參數
+      18-1. servlet container -> init(ServletConfig config) -> GenericServlet
+      18-2. String getInitParameter(String name()); // 取得參數內容
+      18-3. Enumeration getInitParameterNames();    // 取得所有參數名稱
+      18-4. ServletContext getServletContext();     // 抓取 ServletContext 物件
+      18-5. String getServletContextName();         // 抓取 Servlet 名稱
+
+19. ServletContext 介面 : 用於與 Servlet Container 溝通方法 , 每個 web Application 只有一個 servletContext
+      19-1. getResource(String path);               // 擷取 path 路徑所指向的資源
+      19-2. getResourceAsStream(String path);	    // 擷取 path 路徑所指向的資源(串流)
+
+20. Servlet 分享資源方法
+      20-1. ServletRequest : 存在於 request 生命週期中 
+      20-2. ServletSession : 相同的 active Client(瀏覽器) 可以存取  
+	  20-3. ServletContext : 存在於 active web Application 中 , 當下所有 servlet 皆可以存取
+	  20-4. Object getAttribute(String name); // 得到 Servlet Context 的內容
+	  20-5. Enumeration getAttributeNames();  // 取得 Contener 中所有可用資源
+	  20-6. void setAttribute();              // 新增或修改內容

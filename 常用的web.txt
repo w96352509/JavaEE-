@@ -10,7 +10,7 @@
 	9. RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/jsp/lotto_result.jsp"); // 重導
 	   rd.forward(req, resp);
 	10.req.getSession();                  // 得到 session    
-
+    
 2. 回應(resp)
     1. resp.setCharacterEncoding("UTF-8");              // 更改字元編碼
 	2. resp.setContentType("text/html;charset=utf-8");  // 更改網頁類型 
@@ -25,7 +25,7 @@
 	
 	
 3. 其他
-   
+   getAttribute(""); // 只取得 ServletContext 中的物件 舉例: 取得 sql 配置
 
 4. servlet req / resp 編碼改變
     req.setCharacterEncoding("UTF-8");
@@ -79,6 +79,11 @@
 		  lottoService = new LottoService();
 	   }     
 
+10. 串流發送並傳送
+    try(DataOutputStream oos = new DataOutputStream(conn.getOutputStream())) {
+		oos.write(postData);
+		oos.flush();
+	}
 
 ---------------------------------------
 do..()多種寫法 : 使用 doHandle()
