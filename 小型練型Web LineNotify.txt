@@ -1,0 +1,180 @@
+https://notify-bot.line.me/doc/en/
+
+準備 Class : message_form.html / message.jsp / messageServlet / messageService
+貼圖 = 貼圖群組ID + 貼圖ID
+
+message_form.html :
+ 表單 : class="pure-form" / metohd="post" / onsubmit(放棄表單送出給其方法)="return beforeSubmit" /  
+        action="/JavaWeb-20220418/servlet/message"
+ <fieldset>
+  <lengend>Message Form</lengend>
+  訊息 : <textarea type="text" name="content" id="content"/> // 送出訊息內容
+  貼圖 : <input type="number" name="stickerPackageId" id="stickerPackageId" value="6325" style="width: 100px" />
+         <input type="number" onchange="previewSticker()" name="stickerId" id="stickerId" value="10979907" style="width: 120px" />
+  <button type="button" onclick="previewSticker()" class="pure-button pure-button-primary">預覽</button>
+  <span id="previewStickerArea"></span> // 呈現處
+  <p />
+  網路圖片位置: 
+  <input type="text" name="webImageUrl" id="webImageUrl" value="" />
+  <button type="button" onclick="previewWebImage()" class="pure-button pure-button-primary">預覽</button>
+  顯示區:
+  <div id="previewWebImageArea"></div>
+  <p />
+  <button type="submit" class="pure-button pure-button-primary">傳送</button> 
+  </fieldset>
+  
+  Javascript 部分
+   
+   // 表單傳送前驗證
+   function beforeSubmit(){
+     // 1. 檢查訊息內容是否有資料(取得訊息欄位 ID)
+	 var content = document.getElementbyId('').value;
+	 // 2. 將內容空白去除
+	 content = content.trim(); 
+	 // 3. 判斷如果訊息為空
+	 if(content=''){
+	   alert('請輸入訊息內容 !');
+	   document.getElementById('content').focus();
+	   return false;                              // 跳出方法
+	 }
+	 // 若 webImageUrl 欄位有資料且前面沒有加上http:// 或 https://, 則統一補上 https://
+	 // 1. 取得 webImageUrl 欄位內容
+	 var webImageUrl = document.getElementById('webImageUrl').value;
+	 // 2. 將內容空白去除
+	 webImageUrl = webImageUrl.trim();
+	 // 3. 如果內容不為空並判斷前面沒有加上http:// 或 https://, 則統一補上 https://
+	 if(webImageUrl != ''){
+	   if(!(webImageUrl.indexof('http://')>=0 ||webImageUrl.indexOf('https://') >= 0)){
+	   // 4.在 webImageUrl 內容前面加上 https://
+	      document.getElementById('webImageUrl').value = 'https://' + webImageUrl; 
+	   }
+	 }
+	 return true ;
+   }
+	
+   // 預覽貼圖
+   function previewSticker(){
+   // 得到貼圖欄位ID
+   var stickerId = document.getElementById('stickerId').value();
+   // 套入 LineNotify
+   var imgUrl = "https://stickershop.line-scdn.net/stickershop/v1/sticker/" + stickerId + "/android/sticker.png";   
+   // 將 imgUrl 套入顯示欄位 
+   document.getElementById('previewWebImageArea').innerHtml = "<img valign='middle' width='100' src='" + imgUrl + "'>";
+   }
+  
+   // 預覽 web 圖
+   function previewWebImage(){
+   // 得到網路位置圖
+   var webImageUrl = document.getElementById('webImageUrl').value();
+   // 去除空白內容
+   webImageUrl = webImageUrl.trim();
+   // 如果內容不為空並判斷前面沒有加上http:// 或 https://, 則統一補上 https://
+   if(webImageUrl !=''){
+     if(!(webImageUrl.indexof('http://')>=0 || webImageUrl.indexOf('https://')>=0)){
+	   // 加上 https://
+       document.getElementById('webImageUrl').value = 'https://' + webImageUrl;
+       // 重新抓取 webImageUrl 資料
+       webImageUrl = document.getElementById('webImageUrl').value;	   
+	 }
+    }
+	  // 將 webImageUrl 套入顯示欄位 
+	  document.getElementById('previewWebImageArea').innerHTML = "<img src='" + webImageUrl + "'>"; 
+   }   
+  
+
+messageService :
+  1. 授權碼(String token) : "";
+  2. 設定各種類型方法 pushMessageAndWebImage / pushMessageAndSticker / pushMessage // 只需改動 postData
+     
+	 - pushMessage(String content)
+	    postData: ("message=" + content + "&stickerPackageId=" + stickerPackageId + "&stickerId=" + stickerId).getBytes("UTF-8");
+	 
+	 - pushMessageAndSticker(String content, String stickerPackageId, String stickerId)
+	    postData: ("message=" + content).getBytes("UTF-8");
+	 
+	 - pushMessage(String content, String webImageUrl) {
+	   // 推播程序
+	   // 設定發送順序(LineNotify)
+	   String lineNotifyUrl = "https://notify-api.line.me/api/notify";
+	   // Http 狀態預設
+	   int httpCode = 0;
+	   try{
+	        // 將訊息轉為 byte[] 並寫成編碼
+			byte[] postData = 
+			("message=" + content + "&imageThumbnail=" + webImageUrl + "&imageFullsize=" + webImageUrl).getBytes("UTF-8");
+			
+			// 建立 url
+			URL url = new URL(lineNotifyUrl);
+			
+			// 建立 HttpURLConnection 連線物件並設定 
+			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST');
+	        
+			// 定義授權 Header
+            // Bearer 支援 TLS 進階版的 SSL 加密 (看 LineNotify)
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // 非必要
+        	
+            // 關閉快取(Caches)
+			conn.setUseCaches();
+			
+			// 發送並回應
+			try(DataOutputStream oos = new DataOutputStream(conn.getOutputStream())){
+			    oos.write(postData);
+				oos.flush();
+			}
+			
+			// 如果網路狀態 != HttpURLConnection.HTTP_CREATED(201)  並設定狀態
+			if(conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+				httpCode = conn.getResponseCode();
+			}
+	   
+	   }catch(){
+	   
+	   }
+	       // 回傳狀態
+		   return httpCode;
+	 }
+
+@WebServlet("/servlet/message")
+messageServlet extend HttpServlet  : 
+  1. 設定 req/resp 的編碼
+  2. 接收前端需要資料 (訊息資料 / WEB圖片欄位 / 貼圖欄位 ) name
+      String content = req.getParameter("content");
+	  String stickerPackageId = req.getParameter("stickerPackageId");
+	  String stickerId = req.getParameter("stickerId");
+	  String webImageUrl = req.getParameter("webImageUrl");
+  3. 建立推播服務
+      MessageService messageService = new MessageService();
+  4. 套入服務方法
+      int httpcode = messageService.pushMessageAndSticker(content, webImageUrl);
+  5. 重導 jsp 頁面並設定 Attribute 給 jsp
+      RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/jsp/message_result.jsp");
+      req.setAttribute("content", content);
+	  req.setAttribute("stickerId", stickerId);
+	  req.setAttribute("webImageUrl", webImageUrl);
+	  req.setAttribute("httpCode", httpCode);
+	  rd.forward(req, resp);
+
+Message.jsp
+ <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+  <!DOCTYPE html>
+  <html>
+   <head>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.1.0/build/pure-min.css">
+   <meta charset="UTF-8">
+    <title>Message result</title>
+   </head>
+    <body style="padding: 20px">
+      <form class="pure-form" action="/JavaWeb-20220418/html/message_form.html">
+        <fieldset>
+		  <legend>Message result:</legend>
+		  // 帶入 servlet Attribute 
+		  訊息內容: ${ content }<p />
+		  貼圖: <img src="https://stickershop.line-scdn.net/stickershop/v1/sticker/${ stickerId }/android/sticker.png"><p />
+		  網路圖片: <img src="${ webImageUrl }"><p />
+		  回應碼(Http Code): ${ httpCode }<p />
+		  <button type="submit" class="pure-button pure-button-primary">返回</button>
+		</fieldset>
+	</body>	  
