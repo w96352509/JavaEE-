@@ -1,0 +1,90 @@
+1. WEB 主程式架構 : Client -- HTTP請求/回應 -- WEB 伺服器
+
+2. WEB 應用程式技術範疇 :
+     2-1. JAVAServlet 架構 : Client -- HTTP請求/回應 -- WEB 伺服器(WEB container Servlet)-> DB/HTML 
+     2-2. Servlet 效能     : 符合多執行續
+
+3. JSP : 解決 Servlet 開發不易問題 (MVC 架構中為渲染器)
+
+4. Web Application : 直接由 Web 來進行 , 不須使用者安裝於本身系統中
+     4-1. passive 靜態 : HTML / txt / css
+     4-2. active  動態 : Servlet / JSP
+	 4-3. 需存在於 web Application server 中
+	 4-4. servlet / JSP 由 servlet container
+
+5. TCP/IP 網路模型 :  
+     5-1. 應用層 : HTTP
+     5-2. 傳輸層 : TCP
+     5-3. 網路層 : IP
+     5-4. 鏈結層
+     5-5. 三相交握	: A丟(syn) -> B接確認 -> B丟(syn+ack) -> A確認丟(ack) -> B接  // A = Client , B = Server
+
+6. HTTP 協定
+     6-1. URI(統一資源標誌符)
+     6-2. URL(統一資源標定位符)
+     6-3. URN(統一資源標名稱)
+     6-4. Initial line : 請求->方法 + URI + HTTP 版本 / 回應 : HTTP 版本 + 狀態 	
+
+7. GET vs POST 
+     7-1. GET  : 限制 8K
+     7-2. POST : 限制 2G 夾帶數據於 request body
+
+8. JavaWEB 目錄結構 : 專案名稱 -> html / WEB-INF -> web.xml // 於 WEB-INF 下的不可直接訪問
+
+9. 送出請求(request)
+     9-1. request event -> HyperLink / HTML Form 等等 
+	 9-2. 使用 Get  的情境與限制 : 得到網頁圖片等等
+	 9-3. 使用 Post 的情境與限制 : 重送大量資料給 Server 處理
+
+10. 處理請求 : JavaEE -> servlet / servlet.Http 開發協定 extend HttpServlet or GenericServlet 
+      10-1. HttpServlet extend GenericServlet 始於 GenericServlet 無常使用
+	  10-2. GenericServlet : 可以管理 Servlet 週期 , 要覆寫 service() 處理 client 端
+	  10-3. HttpServlet    : 非必要不要覆寫 service() , service() 會自動根據 Http 請求
+	  10-4. HttpServlet    : Client -> Server -> Service() -> do...();
+
+11. servlet 部屬類型: GeroageServlet(部屬 xml) / HttpServlet (@註釋 / web.xml)
+
+12. 使用註釋@配置 Servlet 
+      12-1. @WebServlet 使用標記設定對應 : JavaEE 6 開放
+	  12-2. @WebServlet ( name="servlet 名稱" , urlPatterns={"",""} )
+	  
+
+13. 分析請求 ServletRequest (HTML or JSP name 值)
+      13-1. String      getParameter(String name);      // 取得 name 參數
+      13-2. String[]    getParameterValue(String name); // 取得 name 內容值參數
+      13-3. Enumeration	getParameterNames()             // 取得所有 Client 參數
+
+14. 送出回應 
+      14-1. 利用 ServletResponse     所提供的方法來回應 setContentType / getWrite / getOutputStream
+      14-2. 利用 HttpServletResponse 所提供的方法來回應	setHeader / setStatus / sendRedirect / sendError   
+      14-3. sendRedirect 需要在 committed 前或使用 if...else
+      14-4. sendStatus(int sc) 設定狀態碼	  
+	  14-5. sendError(res... , "錯誤訊息") 傳送指定錯誤訊息
+
+15. 分析 Header 
+      15-1. 處理 HTTP 協議標頭
+      15-2. Enumeration<String> headers = req.getHeaderNames(); // 取得所有標頭
+            While(headers.hasMoreElements()){
+			 String header = (String)headers.nextElement();     // 延續取出
+			 String value  = req.getHeader("header");           // 取出標頭內容值 
+			}
+
+16. 生命週期 
+      16-1. 載入 : Load / 初始 : Initializing / 執行與銷毀 : Servcing & Destroy / 卸載 : Unload 
+      16-2. 週期 : Load -|init()|-> Initialized <-|Service()|-> Servcing 	  
+     	                                ->|destory()|-> Destroyed -> shutdown -> Unload<-|shutdown , startup|-> Load 循環 
+      16-3. servlet life cycle 相關方法 :
+            方法名稱                                        簡要說明
+            void init(ServletConfig config)			        ServletContainer 會呼叫此方法進行 Servlet 初始化
+			void init()                                     Developer 可覆寫此方法自行撰寫 servlet
+			void Server(Servlet req , Servlet resp)         服務 Client 端來的要求(req)
+    	    void destory()                                  當 Servlet container 決定要卸除可使用此方法
+      16-4. init(ServletConfig config)                      取得 web.xml 中訊息 
+      16-5. init(ServletConfig config) = _config = config; init() // config 是 servlet 組態
+            基本都都是使用 init()
+
+17. 協調 Servlet 行程 RequestDispatch
+      17-1. req.getRequestDispath("位置") 取得重導位置的 ServletContext
+      17-2. forward 將 req & res 傳給導入位置接手
+      17-3. include 將 req & res 傳給導入位置主導權還在自身
+      17-4. forward(丟給 servlet 並繼續維護 request & response) vs sendRedirect(丟給瀏覽器(browser)) 	
