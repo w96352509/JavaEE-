@@ -1,6 +1,7 @@
 https://notify-bot.line.me/doc/en/
 
-準備 Class : message_form.html / message.jsp / messageServlet / messageService
+準備 Class : message_form.html / message.jsp / messageServlet / messageService 
+            in JavaWeb20220418 -> servlet -> messageServlet and service -> MessageService and html -> message_form.html and WEB-INF -> jsp -> message.jsp  
 貼圖 = 貼圖群組ID + 貼圖ID
 
 message_form.html :
