@@ -1,0 +1,80 @@
+準備 upload.html / uploadServlet.java / pom + org.apache.commons.io.IOUtils;(需 try catch)
+翻譯 enctype(加密型態表單編碼)
+
+upload.html
+ Form 表單 :   編碼(enctype)           方法(method)      action
+  1. 純文字 => "multipart/form-data"   post              "/JavaWeb0531/controller/upload/file"
+  2. 圖片檔 => "multipart/form-data"   post              "/JavaWeb0531/controller/upload/image"
+ 
+ input 欄位(兩表單的欄位相同) :
+  1. 訊息輸入讀取 type="text" name= "cname" 
+  2. 檔案上傳     type="file" name= "upload_file"
+  3. 上船按鈕     type="submit"
+
+
+@WebServlet("/controller/upload/*") // 後置路徑對應 * 代表任意字串(path info)
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,   // 設定存入緩存大小
+        maxFileSize = 1024 * 1024 * 10,        // 單一檔案最大
+        maxRequestSize = 1024 * 1024 * 30      // 總容量
+)
+uploadServlet extend HttpServlet
+ - 方法 : doPost / uploadFile / uploadImage
+ 
+ doPost : 設定 req/res 的中文編碼 , 並判斷請求的路徑(因路徑是/upload/* 所以返回是 * 號部分)來選擇執行方法
+   String pathInfo = req/res.getPathInfo();
+   switch(pathInfo){
+    case "/file" : uploadFile (req , res); break;
+	case "/image": uploadImage(req , res); break;
+   }
+   
+ uploadFile : 使用 Servlet3.0 提供處理上傳檔案的 getParts() 進行操作  
+  - 得到 Parts 並串流過濾得到對應 HTML 部分並 foreach 將得到的內容轉字串並串流編碼
+    req.getParts().stream()
+	              .Filter(part -> part.eq('upload_file'))
+                  .foreach(part->{
+				    try{
+					     String data = IOUtils.toString(req.getInputStram(),StandardCharsets.UTF_8.name());
+						 res.getWrite().print(data); // 輸出
+					}catch(Exception e){
+					
+					}
+				  });
+
+ uploadImage : 同上旦注意圖片需 : 串流 -> byte[] -> Base64得到編碼後轉 String 給 byte[]
+   -  req.getParts()
+         .stream()
+         .Filter(part -> part.eq("upload_file"))
+         .foreach(part->{
+		    try{
+			     InputStream is = part.getInputStram();
+				 byte[] byte = IOUtils.toByteArray(is);
+				 String data = Base64.getEncoder().encodeToString(bytes); 
+			     
+				 // 印出
+			     String img = "<img src='data:image/png;base64, %s'>";
+                        img = String.format(img, data);
+                        resp.getWriter().print(img + "<br />");
+				 
+				 // 存入資料夾
+                 String fileSavingFolder  = "";                 // 設定存檔路徑
+                 File path = new File(fileSavingFolder);		// 得到路徑的檔案資料
+                 if(!path.exists){
+				     part.mkdir(); // 建立
+				 }				 
+			     
+				 // 取得檔名
+			     String name = part.getSubmittrdFileName();
+			     
+				 // 設定存檔路徑
+				 String fileSavingPath = fileSavingFolder + File.separator + fname;
+				 
+				 // 寫入並存檔
+				 part.write(fileSavingPath);
+				 
+			}catch(Exception e){
+			
+			}
+		 })		 
+   
+   
