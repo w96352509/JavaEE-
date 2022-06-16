@@ -1,4 +1,4 @@
-練習 : 基本Filter + Session(BuyCar)
+練習 : 基本Filter + Session(BuyCar) 在 JavaWeb-20220418 的 servlet -> cart and fliter -> loginFilter
 
 準備 : Session -> ViewCartServlet / ClearCartServlet / BuyServlet / Buy.html / cart.html  
        Filter  -> LoginFilter
