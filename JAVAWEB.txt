@@ -125,8 +125,56 @@
 
 23. Filiter
       23-1. @WebFilter 部屬
+	  23-2. chain.doFilter(req, res); // 通過 Filiter
 
-24. MVC模型
-      24-1. Servlet 因編譯上的困難而誕生 JSP
-      24-2. JSP 標籤字樣 : <%@> 指令 /  <%!> 實作 / <%> 程式 / <%=> out.print / <%-- 註解 / ${} EL (較常使用)
-      24-3. 	  
+24. Session (第三方 cookie 已被停用)
+      24-1. HttpSession 運作原理 : 
+	         - 主機端產生透過雲端丟給 Client  , 下次連接時可以確認 , 有 TimeOut 問題預設 30 分鐘
+             - 當 client 接收到 Session 時 Http header 會新增 cookie = JESSIONID
+             - 得到 session	: req.getSession(boolean create); //(false 登入獲取) / (true 登入存取[連續取用])		 
+             - 新建得到屬性 session.setAttribute("",) or session.getAttribute(""); // 要作適當轉型
+			 - session 失效 : session.invalidate() or 設定 timeout : setMaxInactiveInterval(秒);
+			   or web.xml 設定 並 getMaxInactiveInterval();
+
+25. MVC模型簡介
+      25-1. Servlet 因編譯上的困難而誕生 JSP
+      25-2. JSP 標籤字樣 : <%@> 指令 /  <%!> 實作 / <%> 程式 / <%=> out.print / <%-- 註解 / ${} EL (較常使用)
+      25-3. 處理JSP : JSP is Servlet (將JSP 視為原始碼) / 轉換為相對應的 Servlet
+      25-4. JSP 可使用原本 Servlet 可使用的變數 包含(req/resp) // <%= req.... %>
+      25-5. MVC : M(Model     ) 解決問題的計算模型
+                  V(View      ) 將模型解果呈現給使用者
+                  C(Controller) 負責取得輸入資訊作的前置處理	
+      25-6. client -> Req -> 1.C -> 
+	                         2.M(委託模型處理)  -> 
+							 3.V(C轉發畫面回映) -> 4.M(查詢M狀態) -> 5.V(V發送)HTTP 回應
+      25-7. M -> POJO 實作 / V -> JSP(裡包 HTML) / C -> Servlet  
+
+26. Java Server Page(在 Spring 內實作練習) 
+      26-1. JSP 標籤字樣 : <%@> 指令 /  <%!> 實作 / <%> 程式 / <%=> out.print / <%-- 註解 / ${} EL (較常使用)	  
+      26-2. 語法元素 :
+	        - Comments      註解 : 單行 <%//...%> / 多<%/*...*/%> or <%--...--%>
+            - Directives    指令 : <%@   page(屬性設定) / include(告知jsp要包含外部 HTML , JSP) / taglib(工具) %>
+            - Declarations  宣告 : <%! ...%>
+            - Scriptlet 程式片段 : <%...%>
+      26-3. Page 宣告屬性(屬於 Directives層級)
+            - 在 translation(編譯) 時期先行將該相關資訊給 engine(引勤)
+            - 屬性元 : import / session / errorPage / isErrorPage / buffer / autoFlush / isThreadSafe / 
+			           contentType / pageEncodeing / language / extend / info(文字資訊) 等
+              EX : <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+			       <%@ page errorPage  =" ...jsp"%>  // 錯誤頁面
+				   <%@ page isErrorPage="true"%>     // 繼承前 page 的 exception 開啟則不可單獨執行
+                   <%@ page import  ="" %>
+                   <%@ page session ="false" %>      // 關閉 session 隱含變數
+	 25-4. 隱含變數
+	       - 不須對特定變數進行宣告並可以直接存取(在jsp cycle 中的 _jspService()中已被自動定義)
+		   - req / resp / out / session / application / config / pageContext / page /exception
+		   - req / resp 是定義在 _jspService()的方法參數列中 , 其餘都在方法內
+		   - exception 需開啟 isErrorPage 才會被宣告
+		   - application 提供 web application 的環境變數
+		   - session     提供 Http Session 機制
+		   - req / resp  使用 HttpServletRequset / HttpServletResponse
+		   - page        指向自己(this)
+		   - pageContext 讓 JSP 能直接使用 PageContextm 的環境資訊 EX: out / forword 等
+		   - config      讓 JSP Pages 於 web.xml 取得設定值
+		   - exception   讓 JSP 取得 Throwable 的例外
+				   
