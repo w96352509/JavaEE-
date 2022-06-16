@@ -107,3 +107,26 @@
 	  20-4. Object getAttribute(String name); // 得到 Servlet Context 的內容
 	  20-5. Enumeration getAttributeNames();  // 取得 Contener 中所有可用資源
 	  20-6. void setAttribute();              // 新增或修改內容
+
+21. Servlet 註釋補充
+      21-1. @WebServlet("") // 無須編寫 xml
+      21-2. 非同步 Servlet : asyncSupported = true -> AsyncContext ctx = req.startAsyn(); // 保留 Client 物件緩至 complete 後執行
+	  21-3. @WebInitParam  : @WebInitParam(name= "Rose", value= "India") // 配置基本屬性 
+	  21-4. @WebFilter("路徑")  : @WebFilter("/servlet/*") 在此檔案下都須都得執行此 class
+	  21-5. @WebListner
+	  21-6. @MultipartConfig // 表單設定
+
+22. FileUpload
+      22-1. 表單編碼以串流文件(IntputStreamReader-> getParts()取代)
+            1. enctype="application/x-www-form-urlencoded"(default) &=字斷辨識符
+	        2. enctype="multipart/form-data" boundry=字斷辨識符 // 用於上傳圖片
+            3. enctype="text/plain" ' ' = 字斷辨識符
+			4. 上傳檔案(範例) 
+
+23. Filiter
+      23-1. @WebFilter 部屬
+
+24. MVC模型
+      24-1. Servlet 因編譯上的困難而誕生 JSP
+      24-2. JSP 標籤字樣 : <%@> 指令 /  <%!> 實作 / <%> 程式 / <%=> out.print / <%-- 註解 / ${} EL (較常使用)
+      24-3. 	  

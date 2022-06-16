@@ -1,0 +1,55 @@
+練習 : 基本Filter + Session(BuyCar)
+
+準備 : Session -> ViewCartServlet / ClearCartServlet / BuyServlet / Buy.html / cart.html  
+       Filter  -> LoginFilter
+
+Session 部分	   
+ 1. Buy.html
+     - Form   : method = "POST" , action = "JavaWeb-20220418/servlet/cart/buy"
+     - select : 選項
+     - button : type =  "submit"  
+	 - button : type=   "button" -> onclick="location.href='/JavaWeb-20220418/servlet/cart/view';" cart
+	 
+ 2. BuyServlet extend HttpServlet -> @WebServlet("Servlet/cart/buy")
+     1. 取得請求 session 
+	 2. 建立 List 當購物車
+	 3. 判斷 session 是否有購物車屬性 + synchronized 
+	  3-1. 如果 == null 則新建購物車 , 反之 session 取得購物車屬性 	  
+     4. 取得前端購買商品
+	 5. 放置購買商品
+	 6. 將購物車屬性設給 session
+	 7. 重導 -> /servlet/cart/view
+ 
+ 3. ViewCartServlet extend HttpServlet : @WebServlet("/servlet/cart/view")
+     1. doPost & doGet 同時實作
+     2. 得到登入者 session 資料
+     3. 判斷如果 session == null 或 購物車屬性 == null 重導回購物車.jsp
+
+ 4. ClearCartServlet extend HttpServlet : @WebServlet("/servlet/cart/clear")
+     1. 得到登入者 session 資料
+     2. 判斷若 session != null 並失效 session
+	 3. 重導回購物車
+ 
+ 5. cart.jsp 
+     1. 取得 session 的屬性
+     2. button -> ClearCartServlet
+     3. button -> 返回至購物車	
+  
+Filter 部分
+ 1. LoginServlet extend HttpServlet : @WebServlet("/login") // 配合 loginFilter
+     1. doPost & doGet 同時實作
+     2. 重導至 login.jsp
+	 
+ 2. login.jsp (不可直接訪問)
+     1. 表單 : post
+	 2. 欄位 : name="username" , type="text"
+	         : name="password" , type="number"
+	 3. 按鈕 : 提交 與 重置
+ 
+ 3. LoginFilter extend HttpFilter : @WebFilter("/jsp/cart/*")  // 購物車jsp路徑 
+     1. 判斷此人是否已登入(透過 session)
+	 2. 判斷 session 是否有通過屬性 or != true 反之直接通過 Filter
+	 3. 取得前端資訊並判斷帳號密碼是否正確 (defult : admin 1234)
+	  3-1. 正確給予 session 屬性並通過 Filter 反之重導回 login 
+	  
+	  
