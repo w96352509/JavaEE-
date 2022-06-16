@@ -1,4 +1,5 @@
 準備 upload.html / uploadServlet.java / pom + org.apache.commons.io.IOUtils;(需 try catch)
+     in JavaWeb20220418 -> servlet -> uploadservlet.java and html upload.html
 翻譯 enctype(加密型態表單編碼)
 
 upload.html
