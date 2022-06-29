@@ -1,0 +1,46 @@
+@Entity           // JPA
+@Table            // 表格
+@Immutable        // 不可變 @Immutable + @Entity = View
+@Subselect        // 可下 sql 語法
+
+----------------------------
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY) // 自動增量
+@Column 欄位
+ 
+JSON : https://www.796t.com/content/1543063686.html
+ @JsonIgnore                                         // 可以指定要忽略的欄位(不會顯示於 Json)
+ @JsonIgnoreProperties("類別")                       // 可以指定要忽略的欄位(不會顯示於 Json) 
+ @JsonFormat                                         // 轉換格式 
+  EX : @JsonFormat(timezone = “GMT+8”, pattern = “yyyy-MM-dd HH:mm:ss”)
+
+時間相關 : 
+ @Temporal :
+  TemporalType.DATE（日期）
+  TemporalType.TIME（時間）
+  TemporalType.TIMESTAMP（日期和時間）
+  
+資料庫相關 : https://matthung0807.blogspot.com/2018/06/jpa-bidirectional-onetomanymanytoone.html
+ @OneToMany(mappedBy = "類別")  // 其值為關係實體外鍵屬性的類別名稱
+ @ManyToOne  -> @joinColumn      // 外鍵欄位名稱
+ @OneToOne   -> @joinColumn
+ @ManyToMany -> @joinTable -> joinColumns(擁有方) , inverseJoinColumns(目標方) 
+ 
+ @joinColumn(name = "", referencedColumnName = "") // name 欄位名稱 ,
+                        
+						// https://openhome.cc/Gossip/EJB3Gossip/OneToOneFK.html
+                        // 多用在 @ManyToOne						
+                        1.referencedColumnName 屬性指向關聯/引用實體中的相關列，即主鍵的列名
+                        
+						// 多用在 @OneToOne
+						// referencedColumnName and foreignKey 差別 : foreignKey 有先後建立問題
+						2.foreignKey = @ForeignKey
+
+ @joinTable -> joinColumns(擁有方) , inverseJoinColumns(目標方)
+               EX: Watch 擁有股市 : 則擁有方為 Watch 目標方為股市
+               語法 : @joinTable(name="" , joinColumns = {} , inverseJoinColumns ={} )
+   
+
+CascadeType 與 FetchType : https://openhome.cc/Gossip/EJB3Gossip/CascadeTypeFetchType.html 	
+ 					
+  

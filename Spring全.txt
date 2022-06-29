@@ -50,7 +50,7 @@ Spring 創作目的
   - AOP	方面導向 比　webFilter 更強
 
 ------------------------------------------------------------------------------------------------------------------------
-
+0620
 目錄 : IOC / DI / Bean 配置 /Bean scope / Bean 呼叫 / ref / autowire  
   
 基本 Spring 操作(範例 : session01 -> hello) 
@@ -104,4 +104,88 @@ Spring IOC / DI
         EX: Paper.class -> private Color color , private Size size 則對應 Bean id = "color" and "size"	
 
 ------------------------------------------------------------------------------------------------------------------------
-  
+0624
+目錄 : 引入外部資源 / Set , List , Map 資料集合注入 / <bean> 的生命週期 / FactoryBean(少用) 
+
+ 1. 引入外部資源(範例: 外部檔: data.properties / Bean : Clazz.java )
+      - 外部資源檔型 : properties             // 取名舉例 : clazz.name=Java
+	  - 方法 : 
+	     1. 不常用 : 
+		      <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		        <property name="location" value="data.properties" />
+	          </bean>
+		 2. 常用 <context:properties> 配合 <bean> 的 p:參數="${}" :	
+		      <context:property-placeholder location="外部檔名" />
+			  <bean id="" p:name="${}" class=""/>
+		 
+ 2.<property>與 util 配置 set / map / list  
+	  - 範例 : Teacher , student 
+	  - util 先配置在參考配置
+		 - Set  配置 :
+		     - <property name="Bean物件的參數名稱"> : <set><ref bean=""></ref></set>
+		     - <util:set id  ="Bean物件的參數名稱"> :      <ref bean="">
+		   
+		 - List 配置 :
+         	 - <property name="Bean物件的參數名稱"> : <list><value></value></list>	   
+        	 - <util:list id ="Bean物件的參數名稱"> :       <value></value>
+		   
+         - Map 配置  :
+             - <property name="Bean物件的參數名稱"> : <map><entry key=""><value></value></entry></map>	
+             - <util:map id  ="Bean物件的參數名稱"> : <entry><key><value></value></key><value></value></entry>
+ 
+ 3. Bean 的生命週期(範例 : BeanCycle)
+      - 開始 : init-method    = "bean物件的方法名稱"
+      - 結束 : destroy-method = "bean物件的方法名稱" 透過 ClassPathXmlApplicationContext 關閉(close)	  
+ 
+ 4. 工廠創建(少用) : 透過工廠物件新增給 xml 使用並給主物件使用
+      - implements FactoryBean<物件>
+	     -  getObject()     // 回傳 new 物件()
+		 -  getObjectType() // 回傳物件.class
+		 -  isSingleton()   // 有 prototype 以 property 為主
+------------------------------------------------------------------------------------------------------------------------		0627
+目錄 : MVC 基本運作 / interface 的優點 / Java @配置至 xml 掃描
+注意 : xml 要掃描 <context:component-scan base-package="要掃描的位置"></context:component-scan>
+ 
+ 1. 利用 Java Annotation(@) 進行 DI
+      - MVC 註解
+         - @Controller / @Service / @Reposirory
+         
+		 - 運作 : User <-> Controller(組合Bean) <-> Service(驗證物件邏輯服務等) <-> Reposirory(DB連結) <-> DB 			 
+	         - Controller 接 Serivce
+			 - Serivce    接 Reposirory
+			 - Reposirory 接 DB
+		 
+		 - Service 與 Reposirory 使用 interface(含兩個以上的實作) 
+		    - Serivce 可能有很多的 Controller 使用 
+            - Repository 可能有多 Service 使用
+            - Controller 幾乎都是一對一則不用 interface
+	  
+	  - 常用註解(@)
+         - @Controller 控制類   : 用於註解此 bean 為 MVC 的控制層
+         - @Compontent 元件     : 用於註解此 bean 被 Spring 管理物件生命週期
+         - @Service             : 用於註解此 bean 為 MVC 的業務層
+         - @Reposirory          : 用於註解此 bean 為 MVC 的訪問層	
+             - @Compontent -> public @interface Service / Reposirory // @Compontent = @Service / @Reposirory
+         - @Resource 資源類     : 用於自動照 ByName 配置(J2EE)
+         - @Autowirted 自動綁定 : 用於自動照 ByType 配置(Spring) 可配合使用	@Qualifier 限定詞 = @Resource 效果
+		     - 也可當作建立實體
+		 - @Bean 方法及注入     : @Configuration註解或 @Component註解類中使用 @Bean批註
+		 - @Value               : 賦予預設值可搭配 Spring EL 語法使用
+		     - 普通用法 : @Value(value="")
+			 - 集合用法 :
+			     - List : @Value(value = "#{${物件名稱:{'值','值'}}}")
+				 - Set  : @Value(value = "#{${物件名稱:{'值','值'}}}")
+				 - Map  : @Value(value = "#{${物件名稱: {'K': 'V', 'K': 'V'}}}")
+				 - #{}  : 使用 Spring EL
+		 
+		 - @Scope               : 物件範圍
+		 - @PropertySource("classpath:") 外部配置
+		     - 配合 @Value(value="${}") // Array[] , Set , 正常型別
+             - #{}  使用 Spring EL      // List(將分隔符號去除(split)) , Map
+			     - List : @Value(value="#{'${物件名稱}'.split('分隔符號')}")
+				 - Map  : @Value(value="#{${物件名稱}}")
+			 
+------------------------------------------------------------------------------------------------------------------------	 
+0701 
+目錄 : 動靜態代理	 
+			  
