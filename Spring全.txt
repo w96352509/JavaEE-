@@ -187,5 +187,51 @@ Spring IOC / DI
 			 
 ------------------------------------------------------------------------------------------------------------------------	 
 0701 
-目錄 : 動靜態代理	 
-			  
+目錄 : 代理模式(動/靜)
+ 
+ 代理模式 : 不可直接使用原物件需透過代理物件控制訪問
+   目的 : 將公開方法與業務邏輯分開          
+ 
+ 靜態代理(範例 : session04.sta) :  
+   必須 : 代理物件與被代理物件要實作同一介面
+   規格 : 代理物件 + 建構式(將代理物件注入) + 覆寫方法
+   呼叫 : 被代理物件 = new 代理者(代理物件)
+   優點 : 直覺快速
+   缺點 : 只能單一
+
+ 動態代理(範例 : session04.dyn / cglib)   
+   分為 : JDK 代理 / cglib 代理
+      
+	  - JDK 代理 : 僅支援 interface 
+	      - JDK1.3 後可使用 , 不必為特定物件代理 , 可使用一個 Handler(處理者)服務各物件
+          必須     : 處理者必須實作 java.lang.reflect.InvocationHandler
+	      規格     :  
+		    代理物件(宣告Object object) + 建構式(將代理物件注入) + 取得代理物件(類別載入器 + 代理物件介面 + 處理代理實現)
+          取得代理物件 :
+		    - 類別載入器  (type : ClassLodaer)
+		    - 代理物件介面(type : Class[])
+		    - 取得代理物件(public Object getProxy())
+		      - 處理代理實現(type : InvocationHandler -> (proxy(代理物件), method(調用方法), args(參數)))
+			      - 調用業務方法(回傳) : method.invoke(代理物件 , 參數);
+		      - 取得代理物件(回傳) = Proxy.newProxyInstance(loader , interface , invocationHandler)	  
+		 
+		   呼叫 : 代理物件 = new 處理者( new 被代理物件).getProxy();
+
+      - Cglib 代理 : 可以實現非介面類
+	      原理 : 透過 Echancer(加強子類別) 來覆寫父類別 (子 extend 父)
+	      使用 : 方法攔截器 implements MethodInterceptor (方法攔截器) 
+		    覆寫 :  intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
+			  - return proxy.invokeSuper(Object , Object[]);
+		  
+		  呼叫 : 
+            1. 呼叫增強器   : new Enhancer();
+            2. 設定增強對象 : .setSuperclass(new 代理物件);
+            3. 設置方法攔截 : .setCallback(new 方法攔截器);	
+            4. 創建物件     : .create(); // 需轉型(代理物件)			
+
+ 切面程式 Aspect(範例 session04.dyn.MyLogger)
+   - 可配合動態代理(JDK)
+   - 可以自我定義要帶入的參數(類別(object.getclass) , 執行方法(method.getName) , 參數(args)) 
+       EX : public static void before(Class cls, String methodName, Object[] args)    
+	   
+----------------------------------------------------------------------------------------------------------------------------	  AOP 方面導向( 7/4 )  
