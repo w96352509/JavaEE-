@@ -234,4 +234,114 @@ Spring IOC / DI
    - 可以自我定義要帶入的參數(類別(object.getclass) , 執行方法(method.getName) , 參數(args)) 
        EX : public static void before(Class cls, String methodName, Object[] args)    
 	   
-----------------------------------------------------------------------------------------------------------------------------	  AOP 方面導向( 7/4 )  
+----------------------------------------------------------------------------------------------------------------------------	 
+0704
+目錄 : SpringAop
+  
+  1. AOP 方面導向 : 物件導向(垂直) + 橫切關注點(AOP 水平架構)
+    - 橫切關注點(Cross - cutting concern) : 把公用方法分開撰寫
+
+  2. 攔截機制 Filter and AOP
+    - Filter 路徑過濾
+    - AOP    橫切攔截(僅支援方法代理 / 不支援建構子代理)
+  
+  3. AOP 與 AspectJ
+    - AOP     是一種程式開發方式
+    - AspectJ 是將 AOP 引入 Java 專案	
+
+  4. AOP 觀念術語
+    - Aspect(方面)
+    - Advice(通知)       : 前置通知(Before)、後置通知(After)、例外通知(AfterThrowing)、返回通知(AfterReturning)、環繞通知等 
+    - Joinpoint(連結點)  : 商業邏輯的進入點
+        1. joinPoint.getSignature().getName(); // 取得方法簽章名稱
+        2. joinPoint.getArgs();                // 方法參數		
+	
+	- Pointcut (切入點)  : 讓 Aspect 在那些 Joinpoint 使用 @Pointcut(value ="")
+	- Target   (目標對象): 被Adivce(通知)應用的物件
+	- Proxy    (代理)    : Spring的 AOP 代理方式
+	- Weave    (縫合)    : Target 的過程
+	- 過程 : Pointcut - Weave -> Joinpoint -> Cross - cutting concern -> Aspect -> Advice -> Pointcut ...
+	
+  5. Pointcut EL 語法使用
+    - 各範例
+	  - (value = "execution(* 方法路徑.*.*(..))") // 前 * 任意方法類型與型態 / 後 * 此方法路徑的任意方法 / .. 表示任意參數  
+	  - (value = "execution(public Integer com.spring.core.session05.aop.MathCalcImpl.add(Integer, Integer))") // 全寫
+	  - (value = "execution(public * com.spring.core.session05.aop.MathCalcImpl.*(..))" // 任意型態
+	  - (value = "execution(* *(..))") // 全攔截
+
+  6. AOP 範例
+    - 注意          : 要改 Spring 代理 
+    - Class 設定@   : @Compontent 給 Spring 代理 / @Aspect 切面 / Order() 順序 0~99
+    - 設定 Pointcut	: @Pointcut(value = "execution(*....*(..))") public void pt(){}; // pt{} 為 Pointcut 名稱
+	- 設定各通知    :
+	    - 前置通知 @Before        (value="pt()") public void beforeAdvice(Joinpoint joinPoint){};
+		- 後置通知 @After         (value="pt()") public void  AfterAdvice(Joinpoint joinPoint){}; // 必定執行
+		- 返回通知 @AfterReturning(value="pt()" , returning="result")  // 將方法返回值放到 result 中 , 有錯誤不執行
+		             public void afterReturningAdvice(JoinPoint joinPoint, Object result){}; 
+		
+		- 異常通知 @AfterThrowing(value = "pt()", throwing = "ex") // 可以將異常通知給 throwing 接收
+		             public void afterThrowingAdvice(JoinPoint joinPoint, Throwable ex) {};
+   
+   - 環繞通知方法(@Around) :
+        - 型別   : Object
+		- 進入點 : ProceedingJoinPoint
+        - 範例 :
+            1. 方法        : public Object aroundAdvice(ProceedingJoinPoint joinPoint)
+            2. 設定回傳值  : 
+                 2-1. 型別 : Object
+                 2-2. 預設 : null
+            3. 得到方法名稱: joinPoint.getSignature.getName();
+            4. 得到方法參數: joinPoint.getArgs();
+            5. 套入 try(前置通知 / 執行業務邏輯(重要必要) / 返回通知 ) catch (異常通知) finally (後置通知)
+                 5-1. 執行業務邏輯 : 回傳值 = joinPoint.proceed();
+            6. 回傳				 
+	
+	- 呼叫 :
+	   - XML 配置 :
+	        0. XML 中配置 : 
+			     1. <!-- 掃描配置 -->
+	                  <context:component-scan base-package="com.spring.core.session05" />
+				 2. <!-- 讓 Spring AOP 切面自動代理 -->
+	                  <aop:aspectj-autoproxy proxy-target-class="true" />
+	        1. 取得 XML   : ApplicationContext ctx = new ClassPathXmlApplicationContext("xml名稱.xml");
+			2. 取得方法   : 介面 名稱 = ctx.getBean("實作類別(首字小寫)" , 實作類別.class);
+	  
+	  - Java 配置 :
+	        0. 註釋注入 : 
+			      @Configuration          // 此為 Java 配置檔 
+			      @ComponentScan()        // 啟用元件掃描(掃瞄有 @ 註解的元件, 目的是交由 String 來管理)
+						                  // @ComponentScan(basePackages={"方法路徑"}) 可指定掃描區域
+			      @EnableAspectJAutoProxy // 自動生成代理物件
+	
+	  - 橫向多型 :
+	        1. Class 註釋配置 : @Aspect 
+			2. 物件註釋配置   : @DeclareParents(value="物件位置" , defaultImpl = 物件.class) // defaultImpl 預設多型類別
+	        
+	
+      - AOP 實作 :
+            1. 範例 : 
+			     1-1. 介面(Performance) -> Class (Dancer)
+                 1-2. 介面(Singer)		-> Class (BackSinger)	
+                 1-3. Aspect -> Class(Introducter) 練習轉換類別 / Class(Audience) 練習 AOP
+		    
+			2. 呼叫 Java 配置
+                 2-1. 設定 javaConfig.java 配置 : @Configuration + @ComponentScan() + @EnableAspectJAutoProxy 
+                        2-1-1. 設定     Bean : @Bean(name="") public 介面 名稱(){ 介面實作 名稱 = new 介面實作; 回傳名稱 };
+                        2-1-2. 設定切面 Bean : @Bean public 切面類別 名稱(){ 回傳 new 切面類別 };
+                 
+				 2-2. @Test 呼叫
+                        2-2-1. ApplicationContext ctx = new AnnotationConfigApplicationContext(config名稱.class);
+                        2-2-2. 介面 名稱 = ctx.getBean("名稱" , 介面實作.class);
+                        2-2-3. try{
+						         dancer.perform(); // 舞者表演
+						        } - catch(Exception e){
+								 System.out.println(e); // 意外發生
+			                     // 舞者轉換跑道
+			                     // 改行去唱歌
+			                     // dancer 透過 introducter(經紀人) 轉換跑道
+			                     System.out.println("舞者轉歌者");
+			                     Singer singer = (Singer) dancer;  // 橫向多型
+			                     singer.sing();  
+								}
+                         						
+		
