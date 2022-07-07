@@ -316,6 +316,7 @@ Spring IOC / DI
 	  - 橫向多型 :
 	        1. Class 註釋配置 : @Aspect 
 			2. 物件註釋配置   : @DeclareParents(value="介面位置+" , defaultImpl = 物件.class) 
+			                    public 介面 名稱 // 要多型的介面
 			   // defaultImpl 預設多型類別 , + 代表介面下所有方法
 	        
 	
