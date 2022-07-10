@@ -315,8 +315,8 @@ Spring IOC / DI
 	
 	  - 橫向多型 :
 	        1. Class 註釋配置 : @Aspect 
-			2. 物件註釋配置   : @DeclareParents(value="介面位置+" , defaultImpl = 物件.class) 
-			                    public 介面 名稱 // 要多型的介面
+			2. 物件註釋配置   : @DeclareParents(value="介面位置+" , defaultImpl = 物件.class)  
+			                      public 介面 名稱 // 要多型的介面
 			   // defaultImpl 預設多型類別 , + 代表介面下所有方法
 	        
 	
@@ -345,5 +345,42 @@ Spring IOC / DI
 			                     Singer singer = (Singer) dancer;  // 橫向多型
 			                     singer.sing();  
 								}
-                         						
-		
+----------------------------------------------------------------------------------------------------------------------------     0708
+目錄 : Spring JDBC
+筆記 : 使用 c3p0 pool 為了多方使用
+Spring JDBC : 為了簡化 Java JDBC API / 支援多執行緒 : @Autowirted JdbcTemplate jdbcTemplate
+
+ 1. pom.xml 增加 mysql and Simple flat mapper jar
+ 2. 配置 db.properties 檔
+      - jdbc.driver : com.mysql.cj.jdbc.Driver
+      - jdbc.url : jdbc:mysql://localhost:3306/資料庫名稱?serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true  
+      - jdbc.username : (筆電 & 桌機) root
+      - jdbc.password :	12345678 / zxcv985613
+ 
+ 3. 透過 xml 配置 : jdbc-config.xml
+      - 外部 db.properties : <context:property-placeholder location="db.properties" />
+      - 設定 c3p0 pool
+          <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		    <property name="driverClass" value="${jdbc.driver}" />
+		    <property name="jdbcUrl" value="${jdbc.url}" />
+		    <property name="user" value="${jdbc.username}" />
+		    <property name="password" value="${jdbc.password}" />
+		    <property name="maxConnectionAge" value="300" />
+		    <property name="maxIdleTimeExcessConnections" value="50" />
+		    <property name="debugUnreturnedConnectionStackTraces" value="true" />
+	      </bean>
+     
+	 - 加入 jdbc template : 		  
+	      <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		    <property name="dataSource" ref="dataSource" />
+	      </bean>
+
+     - named paramter jdbc template :
+          <bean id="namedParameterJdbcTemplate" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
+		    <constructor-arg ref="dataSource" />
+	      </bean>
+
+  4. @Test 測試呼叫
+    - ApplicationContext ctx = new ClassPathXmlApplicationContext("jdbc-config.xml");
+      ComboPooledDataSource	cp = ctx.getBean("dataSource" , ComboPooledDataSource.class);
+	  cp.getConnection(); // 連線

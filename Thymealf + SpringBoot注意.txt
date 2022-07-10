@@ -1,0 +1,18 @@
+0706 : 忘記的部分
+ Controller : @ModelAttribute 類別 名稱 , Model model , @PathVariable("") type 名稱 // 接收參數
+              redirect: ./ (1層) EX: /student/null-> /student
+			  redirect:../ (2層) EX: /student/delete/{id} -> /student
+
+ Thymealf   :
+  綁定表單 : <form th:action="@{}" th:method="#{_method}" th:object="${}">
+  需要項目 :
+    1. 隱藏欄位(保障 get 可以得到完整資訊 , 也可在後台設定 物件.set(id))
+	2. 取得綁定物件 : *{名稱};
+	3. 遞迴         : th:each=" :${}"
+	4. 連結         : th:href="@{/../id(id=${})}" // 代參數
+	  4-1. 內容當連結 <a th:href ="@{}" th:text="${]"> </a>
+	5. 判斷         : th:if=""
+    6. 取得參數數量 : ${#list.size()}	
+	7. 驗證判斷     : <span class="css" th:if="${fields.hasErrors('*{}')}" th:errors="*{}"> </span>
+	8. 下拉選單     : <select th:fields="*{.id}"><option th:each=":${}" th:value="${}" th:text="${}">
+  
