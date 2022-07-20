@@ -529,5 +529,93 @@ Java 配置 Spring JDBC
 			           (建構式 : 空  & jname + toString)
 					   
 		 2. Template -> EmpDao (@Reposirory) // Dao: Data Access Object
+
+--------------------------------------------------------------------------------------------------------------------------------00715
+目錄 : 手動新增 Transaction Manger / Transaction(範例配置)
+
+  1. 手動新增 Transaction Manger :
+       範例 : int[] addTwo(String ename1 , Integer age1 , String ename2 , Integer age2 ){}
+       步驟 : 
+	     0. 綁定 c3p0                              = private ComboPooledDataSource dataSource; 
+         1. 宣告 DataSourceTransactionManger  mag  = new TransactionManger(dataSource);
+         2. 定義 DefaultTransactionDefinition def  = new DefaultTranctionDefinition();
+           2-1. 設定交易屬性 def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+           2-2. 取得交易狀態 TransactionStatus         = mag.getTransaction(def)
+         3.  try{ CRUD 操作 }
+		     // 錯誤回滾
+		     catch{ mag.rollback(status); }
+		 4. 提交  transactionManager.commit(status);
+
+ 2. Transaction 範例 (db : stock , wallet ,book)		 
+--------------------------------------------------------------------------------------------------------------------------------
+0718
+目錄 : Transaction 交易管理
+  
+  1. Transaction 交易管理 : 是一組由邏輯緊密聯合的一個交易整體多個資料表操作
+  
+  2. 配置 xml 檔
+     <!-- 配置事務管理器 -->
+       <bean id="transactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager"><property name="dataSource" ref="dataSource" ></property>
+       </bean>
+     <!-- 開啟註解驅動，對事務相關的註解進行掃描與解析 -->
+     <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+
+  3. @Transaction 註解配置
+       - 配置在類別(該類別下所有方法)
+	   - 配置在方法(只有當前方法可用)
+	   - 範例 :
+	   @Transaction(
+	     propagation = Propagation. ,   // 傳播行為
+		 isolation   = Isolation.   ,   // 隔離層級
+		 timeout     =              ,   // 交易超時間期
+		 readOnly    = boolean      ,   // 唯讀指示(是否將欄位鎖住)
+		 rollbackFor ={Exception.class} // 根據指定例外進行回滾(RuntimeException 會自動抓取不用 rollbackFor)
+         // 如果例外使用 Exeption , Transaction 的方法都要加 rollbackFor 		 
+	   )
+
+  4. 傳播行為(Propagation) // 事務(tx 交易) , 掛起(不用) // NESTED 不常用
+	   1. Propagation.REQUIRED      : 支持當前事務   , 若當前無事務 , 就新建一個事務(最常見)
+       2. Propagation.SUPPORTS      : 支持當前事務   , 若當前無事務 , 就已無事務進行
+       3. Propagation.MANDATORY     : 支持當前事務   , 若當前無事務 , 就拋出例外
+       4. Propagation.REQUIRED_NEW  : 直接使用事務   , 若當前有事務 , 把當前事務掛起
+       5. Propagation.NOT_SUPPOPTED : 直接使用無事務 , 若當前有事務	, 把當前事務掛起
+       6. Propagation.NEVER         : 直接使用無事務 , 若當前有事務 , 就拋出例外
+       7. Propagation.NESTED        : 支持當前事務   , 如果當前事務存在，則執行一個嵌套事務，如果當前沒有事務，就新建一個事務
+
+  5. 隔離帶來錯誤 
+  
+       1. 髒讀       : 一個事務讀取了另外一個事務未 commit 的資料 
+	        
+			事務1： A給B轉賬500，但是事務未提交。
+            事務2： B檢視了賬戶，發現A轉過來500，本來只轉300過來就好，發現多轉了200，心裡美滋滋。。。
+            事務1： A及時發現多轉了200，修改了轉300，提交事務。		  
+      
+       2. 不可重複讀 : 一個事務在兩次讀取間 , 被其他事務更改 , 導致兩次讀取資料不同
+	       
+		    事務1：B去買東西，卡里有500塊錢，消費100，還沒提交事務。
+            事務2：B的老婆把B的500塊錢轉出去了，已提交事務。
+            事務1：B此時提交事務，支付不了。再次讀取發現卡里沒錢支付。
+	   
+	   3. 幻讀      : 一個事務按相同的查詢條件重新讀取以前檢索過的資料，卻發現其他事務插入了滿足其查詢條件的新資料
+	        
+			事務1 : select id 5 (未有此資料)
+			事務2 : insert id 5 (commit)
+			事務1 : insert id 5 (commit fail)
+	        // 不可重複讀側重表達 讀-讀，幻讀則是說 讀-寫，用寫來證實讀的是鬼影
+     	 
+	   
+
+            	   
+	         
+	        
+	  
+  6. 隔離層級(isolation)
+       1. Isolation.DEFAULT            : 預設(已資料庫預設為準)
+       2. Isolation.READ_COMMITTED     : 讀已提交: 不可重複讀 (針對欄位資料)
+       3. Isolation.READ_UNCOMMITTED   : 讀未提交: 髒讀       (針對欄位資料)
+       4. Isolation.REPEATABLE_READ    : 可重複讀: 幻讀 , 其他人不可以針對指定資料列CRUD (針對欄位列(多欄))
+       5. Isolation.SERIALIZABLE 序列化: 效能低, 消耗大, 但是可以簡單解決上面的問題(實務上不建議使用) (針對資料表)	   
+ 
             
              
